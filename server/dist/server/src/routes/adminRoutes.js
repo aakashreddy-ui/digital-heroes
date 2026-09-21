@@ -1,0 +1,26 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const adminController_1 = require("../controllers/adminController");
+const drawController_1 = require("../controllers/drawController");
+const winnerController_1 = require("../controllers/winnerController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.use(auth_1.requireAdmin);
+router.get('/users', adminController_1.adminController.getUsers);
+router.put('/users/:id', adminController_1.adminController.updateUser);
+router.get('/users/:id/scores', adminController_1.adminController.getUserScores);
+router.put('/scores/:id', adminController_1.adminController.adminUpdateScore);
+router.get('/subscriptions', adminController_1.adminController.getSubscriptions);
+router.get('/draws', drawController_1.drawController.getAllDraws);
+router.post('/draws', drawController_1.drawController.adminCreateDraw);
+router.post('/draws/:id/simulate', drawController_1.drawController.adminSimulateDraw);
+router.post('/draws/:id/publish', drawController_1.drawController.adminPublishDraw);
+router.get('/winners', winnerController_1.winnerController.adminGetAll);
+router.post('/winners/:id/verify', winnerController_1.winnerController.adminVerify);
+router.post('/winners/:id/reject', (req, res, next) => {
+    req.body = { ...req.body, approved: false, notes: req.body.notes };
+    return winnerController_1.winnerController.adminVerify(req, res, next);
+});
+router.post('/winners/:id/payout', winnerController_1.winnerController.adminPayout);
+exports.default = router;

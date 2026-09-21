@@ -43,7 +43,7 @@ export const winnerController = {
       let fileSize = req.body.file_size || 0;
 
       if (req.file) {
-        fileUrl = await storeProof(req.file);
+        fileUrl = await storeProof(req.file, id);
         originalFilename = req.file.originalname;
         fileType = req.file.mimetype;
         fileSize = req.file.size;

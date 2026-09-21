@@ -7,20 +7,21 @@ const supabase = config.supabaseUrl && config.supabaseServiceRoleKey
   ? createClient(config.supabaseUrl, config.supabaseServiceRoleKey)
   : null;
 
-export async function storeProof(file: Express.Multer.File): Promise<string> {
+export async function storeProof(file: Express.Multer.File, winnerId: string): Promise<string> {
   const extension = path.extname(file.originalname).toLowerCase() || '.png';
   const filename = `proof_${Date.now()}_${Math.random().toString(36).substring(7)}${extension}`;
+  const storagePath = `${winnerId}/${filename}`;
 
   if (supabase) {
     const { error } = await supabase.storage
       .from('winner-proofs')
-      .upload(filename, file.buffer, {
+      .upload(storagePath, file.buffer, {
         contentType: file.mimetype,
         upsert: false,
       });
 
     if (error) throw new Error(`Proof storage upload failed: ${error.message}`);
-    return filename;
+    return storagePath;
   }
 
   const proofDir = path.join(config.uploadDir, 'proofs');

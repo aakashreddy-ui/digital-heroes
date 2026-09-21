@@ -35,7 +35,12 @@ export async function createApp() {
   }));
 
   app.use(cors({
-    origin: [config.clientUrl, 'http://localhost:3000', 'http://localhost:5173'].filter(Boolean),
+    origin: [
+      config.clientUrl,
+      'https://digital-heroes1.netlify.app',
+      'http://localhost:3000',
+      'http://localhost:5173',
+    ].filter(Boolean),
     credentials: true,
   }));
 

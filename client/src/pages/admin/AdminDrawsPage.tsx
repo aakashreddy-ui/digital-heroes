@@ -17,6 +17,7 @@ export function AdminDrawsPage() {
   const [monthYear, setMonthYear] = useState('2026-10');
   const [method, setMethod] = useState<'random' | 'algorithmic'>('random');
   const [rollover, setRollover] = useState('0');
+  const [customNumbers, setCustomNumbers] = useState('33,35,37,38,42');
   const [simulation, setSimulation] = useState<any>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -58,6 +59,26 @@ export function AdminDrawsPage() {
     }
   };
 
+  const simulateCustom = async (draw: Draw) => {
+    const numbers = customNumbers.split(',').map(value => Number(value.trim()));
+    if (numbers.length !== 5 || numbers.some(number => !Number.isInteger(number) || number < 1 || number > 45) || new Set(numbers).size !== 5) {
+      error('Enter exactly five unique numbers from 1 to 45.');
+      return;
+    }
+
+    setBusyId(draw.id);
+    try {
+      const result = await api.draws.simulate(draw.id, { custom_numbers: numbers });
+      setSimulation(result);
+      success('Custom simulation stored. Review before publishing.');
+      await load();
+    } catch (err: any) {
+      error(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const publish = async (id: string) => {
     if (!confirm('Publish this draw? This cannot be undone.')) return;
     setBusyId(id);
@@ -82,6 +103,18 @@ export function AdminDrawsPage() {
         </div>
         <Button onClick={() => setCreateOpen(true)}>Configure draw</Button>
       </div>
+
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <Input
+            label="Custom test numbers"
+            value={customNumbers}
+            onChange={e => setCustomNumbers(e.target.value)}
+            placeholder="33,35,37,38,42"
+          />
+          <p className="text-xs text-slate-500 pb-2">Admin testing only: five unique values from 1 to 45.</p>
+        </div>
+      </Card>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -117,6 +150,9 @@ export function AdminDrawsPage() {
                       </Button>
                       <Button size="sm" variant="outline" isLoading={busyId === draw.id} onClick={() => simulate(draw, 'algorithmic')}>
                         Weighted sim
+                      </Button>
+                      <Button size="sm" variant="outline" isLoading={busyId === draw.id} onClick={() => simulateCustom(draw)}>
+                        Custom sim
                       </Button>
                       <Button size="sm" onClick={() => publish(draw.id)} disabled={!draw.winning_numbers?.length}>
                         Publish

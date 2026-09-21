@@ -31,7 +31,7 @@ export async function storeProof(file: Express.Multer.File, winnerId: string): P
 }
 
 export async function createProofSignedUrl(storagePath: string): Promise<string | null> {
-  if (!supabase || storagePath.startsWith('/uploads/')) return storagePath;
+  if (!supabase || storagePath.startsWith('/') || /^https?:\/\//i.test(storagePath)) return storagePath;
 
   const { data, error } = await supabase.storage
     .from('winner-proofs')
